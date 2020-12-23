@@ -16,6 +16,7 @@ require_once(dirname(__FILE__) . '/' . 'igetui/template/IGt.NotificationTemplate
 require_once(dirname(__FILE__) . '/' . 'igetui/template/IGt.TransmissionTemplate.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/template/IGt.NotyPopLoadTemplate.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/template/IGt.APNTemplate.php');
+require_once(dirname(__FILE__) . '/' . 'igetui/template/IGt.StartActivityTemplate.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/GTConfig.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/HttpManager.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/ApiUrlRespectUtils.php');
