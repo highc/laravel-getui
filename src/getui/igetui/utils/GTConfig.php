@@ -7,6 +7,8 @@
  */
 class GTConfig
 {
+
+
     public static function isPushSingleBatchAsync()
     {
         return "true" == GTConfig::getProperty("gexin_pushSingleBatch_needAsync", null, "false");
@@ -30,6 +32,15 @@ class GTConfig
     public static function getHttpProxyPort()
     {
         return (int)GTConfig::getProperty("gexin_http_proxy_port", "gexin.rp.sdk.http.proxyPort", 80);
+    }
+    public static function getHttpProxyUserName()
+    {
+        return GTConfig::getProperty("gexin_http_proxy_username", "gexin.rp.sdk.http.proxyUserName");
+    }
+
+    public static function getHttpProxyPasswd()
+    {
+        return GTConfig::getProperty("gexin_http_proxy_passwd", "gexin.rp.sdk.http.proxyPasswd");
     }
 
     public static function getSyncListLimit()
@@ -68,6 +79,9 @@ class GTConfig
         return (int)GTConfig::getProperty("gexin_http_tryCount", "gexin.rp.sdk.http.gexinTryCount", 3);
     }
 
+    public static function getMaxLenOfBlackCidList(){
+        return (int)GTConfig::getProperty("gexin_max_blkCid_length", null, 1000);
+    }
     public static function getDefaultDomainUrl($useSSL)
     {
         $urlStr = GTConfig::getProperty("gexin_default_domainurl", null);
@@ -132,8 +146,18 @@ class GTConfig
         }
     }
 
+    public static function getNotifyIntentLimit()
+    {
+        return (int)GTConfig::getProperty("notify_intent_lsimit", null, 1000);
+    }
+
+    public static function getStartActivityIntentLimit()
+    {
+        return (int)GTConfig::getProperty("start_activity_intent_limit", null, 1000);
+    }
+
     public static function getSDKVersion()
     {
-        return "4.0.1.7";
+        return "4.1.0.0";
     }
 }

@@ -19,6 +19,7 @@ class CmdID extends PBEnum
   const SERVERNOTIFYRESULT  = 15;
   const STOPBATCHTASK  = 16;
   const STOPBATCHTASKRESULT  = 17;
+  const PUSHMMPSINGLEBATCH  = 18;
 }
 class GtAuth extends PBMessage
 {
@@ -159,8 +160,8 @@ class ReqServList extends PBMessage
     parent::__construct($reader);
     $this->fields["1"] = "PBString";
     $this->values["1"] = "";
-    $this->fields["3"] = "PBInt";
-    $this->values["3"] = "";
+    $this->fields["2"] = "PBInt";
+    $this->values["2"] = "";
   }
   function seqId()
   {
@@ -172,11 +173,11 @@ class ReqServList extends PBMessage
   }
   function timestamp()
   {
-    return $this->_get_value("3");
+    return $this->_get_value("2");
   }
   function set_timestamp($value)
   {
-    return $this->_set_value("3", $value);
+    return $this->_set_value("2", $value);
   }
 }
 class ReqServListResult_ReqServHostResultCode extends PBEnum
@@ -270,6 +271,8 @@ class PushResult extends PBMessage
     $this->values["6"] = "";
     $this->fields["7"] = "PBString";
     $this->values["7"] = "";
+    $this->fields["8"] = "PBString";
+    $this->values["8"] = "";
   }
   function result()
   {
@@ -327,6 +330,14 @@ class PushResult extends PBMessage
   {
     return $this->_set_value("7", $value);
   }
+  function batchId()
+  {
+    return $this->_get_value("8");
+  }
+  function set_batchId($value)
+  {
+    return $this->_set_value("8", $value);
+  }
 }
 class PushListResult extends PBMessage
 {
@@ -356,6 +367,260 @@ class PushListResult extends PBMessage
   function results_size()
   {
     return $this->_get_arr_size("1");
+  }
+}
+class NotifyInfo_Type extends PBEnum
+{
+  const _payload  = 0;
+  const _intent  = 1;
+  const _url  = 2;
+}
+class NotifyInfo extends PBMessage
+{
+  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
+  public function __construct($reader=null)
+  {
+    parent::__construct($reader);
+    $this->fields["1"] = "PBString";
+    $this->values["1"] = "";
+    $this->fields["2"] = "PBString";
+    $this->values["2"] = "";
+    $this->fields["3"] = "PBString";
+    $this->values["3"] = "";
+    $this->fields["4"] = "PBString";
+    $this->values["4"] = "";
+    $this->fields["5"] = "PBString";
+    $this->values["5"] = "";
+    $this->fields["6"] = "NotifyInfo_Type";
+    $this->values["6"] = "";
+    $this->values["6"] = new NotifyInfo_Type();
+    $this->values["6"]->value = NotifyInfo_Type::_payload;
+    $this->fields["7"] = "PBString";
+    $this->values["7"] = "";
+  }
+  function title()
+  {
+    return $this->_get_value("1");
+  }
+  function set_title($value)
+  {
+    return $this->_set_value("1", $value);
+  }
+  function content()
+  {
+    return $this->_get_value("2");
+  }
+  function set_content($value)
+  {
+    return $this->_set_value("2", $value);
+  }
+  function payload()
+  {
+    return $this->_get_value("3");
+  }
+  function set_payload($value)
+  {
+    return $this->_set_value("3", $value);
+  }
+  function intent()
+  {
+    return $this->_get_value("4");
+  }
+  function set_intent($value)
+  {
+    return $this->_set_value("4", $value);
+  }
+  function url()
+  {
+    return $this->_get_value("5");
+  }
+  function set_url($value)
+  {
+    return $this->_set_value("5", $value);
+  }
+  function type()
+  {
+    return $this->_get_value("6");
+  }
+  function set_type($value)
+  {
+    return $this->_set_value("6", $value);
+  }
+  function notifyId()
+  {
+    return $this->_get_value("7");
+  }
+  function set_notifyId($value)
+  {
+    return $this->_set_value("7", $value);
+  }
+}
+class PushInfo extends PBMessage
+{
+  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
+  public function __construct($reader=null)
+  {
+    parent::__construct($reader);
+    $this->fields["1"] = "PBString";
+    $this->values["1"] = "";
+    $this->fields["2"] = "PBString";
+    $this->values["2"] = "";
+    $this->fields["3"] = "PBString";
+    $this->values["3"] = "";
+    $this->fields["4"] = "PBString";
+    $this->values["4"] = "";
+    $this->fields["5"] = "PBString";
+    $this->values["5"] = "";
+    $this->fields["6"] = "PBString";
+    $this->values["6"] = "";
+    $this->fields["7"] = "PBString";
+    $this->values["7"] = "";
+    $this->fields["8"] = "PBString";
+    $this->values["8"] = "";
+    $this->fields["9"] = "PBString";
+    $this->values["9"] = "";
+    $this->fields["10"] = "PBInt";
+    $this->values["10"] = "";
+    $this->fields["11"] = "PBBool";
+    $this->values["11"] = "";
+    $this->fields["12"] = "PBString";
+    $this->values["12"] = "";
+    $this->fields["13"] = "PBBool";
+    $this->values["13"] = "";
+    $this->fields["14"] = "PBString";
+    $this->values["14"] = "";
+    $this->fields["15"] = "PBBool";
+    $this->values["15"] = "";
+    $this->fields["16"] = "NotifyInfo";
+    $this->values["16"] = "";
+  }
+  function message()
+  {
+    return $this->_get_value("1");
+  }
+  function set_message($value)
+  {
+    return $this->_set_value("1", $value);
+  }
+  function actionKey()
+  {
+    return $this->_get_value("2");
+  }
+  function set_actionKey($value)
+  {
+    return $this->_set_value("2", $value);
+  }
+  function sound()
+  {
+    return $this->_get_value("3");
+  }
+  function set_sound($value)
+  {
+    return $this->_set_value("3", $value);
+  }
+  function badge()
+  {
+    return $this->_get_value("4");
+  }
+  function set_badge($value)
+  {
+    return $this->_set_value("4", $value);
+  }
+  function payload()
+  {
+    return $this->_get_value("5");
+  }
+  function set_payload($value)
+  {
+    return $this->_set_value("5", $value);
+  }
+  function locKey()
+  {
+    return $this->_get_value("6");
+  }
+  function set_locKey($value)
+  {
+    return $this->_set_value("6", $value);
+  }
+  function locArgs()
+  {
+    return $this->_get_value("7");
+  }
+  function set_locArgs($value)
+  {
+    return $this->_set_value("7", $value);
+  }
+  function actionLocKey()
+  {
+    return $this->_get_value("8");
+  }
+  function set_actionLocKey($value)
+  {
+    return $this->_set_value("8", $value);
+  }
+  function launchImage()
+  {
+    return $this->_get_value("9");
+  }
+  function set_launchImage($value)
+  {
+    return $this->_set_value("9", $value);
+  }
+  function contentAvailable()
+  {
+    return $this->_get_value("10");
+  }
+  function set_contentAvailable($value)
+  {
+    return $this->_set_value("10", $value);
+  }
+  function invalidAPN()
+  {
+    return $this->_get_value("11");
+  }
+  function set_invalidAPN($value)
+  {
+    return $this->_set_value("11", $value);
+  }
+  function apnJson()
+  {
+    return $this->_get_value("12");
+  }
+  function set_apnJson($value)
+  {
+    return $this->_set_value("12", $value);
+  }
+  function invalidMPN()
+  {
+    return $this->_get_value("13");
+  }
+  function set_invalidMPN($value)
+  {
+    return $this->_set_value("13", $value);
+  }
+  function mpnXml()
+  {
+    return $this->_get_value("14");
+  }
+  function set_mpnXml($value)
+  {
+    return $this->_set_value("14", $value);
+  }
+  function validNotify()
+  {
+    return $this->_get_value("15");
+  }
+  function set_validNotify($value)
+  {
+    return $this->_set_value("15", $value);
+  }
+  function notifyInfo()
+  {
+    return $this->_get_value("16");
+  }
+  function set_notifyInfo($value)
+  {
+    return $this->_set_value("16", $value);
   }
 }
 class Button extends PBMessage
@@ -424,6 +689,159 @@ class AppStartUp extends PBMessage
     return $this->_set_value("3", $value);
   }
 }
+class Target extends PBMessage
+{
+  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
+  public function __construct($reader=null)
+  {
+    parent::__construct($reader);
+    $this->fields["1"] = "PBString";
+    $this->values["1"] = "";
+    $this->fields["2"] = "PBString";
+    $this->values["2"] = "";
+    $this->fields["3"] = "PBString";
+    $this->values["3"] = "";
+  }
+  function appId()
+  {
+    return $this->_get_value("1");
+  }
+  function set_appId($value)
+  {
+    return $this->_set_value("1", $value);
+  }
+  function clientId()
+  {
+    return $this->_get_value("2");
+  }
+  function set_clientId($value)
+  {
+    return $this->_set_value("2", $value);
+  }
+  function alias()
+  {
+    return $this->_get_value("3");
+  }
+  function set_alias($value)
+  {
+    return $this->_set_value("3", $value);
+  }
+}
+class SmsContentEntry extends PBMessage
+{
+  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
+  public function __construct($reader=null)
+  {
+    parent::__construct($reader);
+    $this->fields["1"] = "PBString";
+    $this->values["1"] = "";
+    $this->fields["2"] = "PBString";
+    $this->values["2"] = "";
+  }
+  function key()
+  {
+    return $this->_get_value("1");
+  }
+  function set_key($value)
+  {
+    return $this->_set_value("1", $value);
+  }
+  function value()
+  {
+    return $this->_get_value("2");
+  }
+  function set_value($value)
+  {
+    return $this->_set_value("2", $value);
+  }
+}
+class SmsInfo extends PBMessage
+{
+  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
+  public function __construct($reader=null)
+  {
+    parent::__construct($reader);
+    $this->fields["1"] = "PBString";
+    $this->values["1"] = "";
+    $this->fields["2"] = "SmsContentEntry";
+    $this->values["2"] = array();
+    $this->fields["3"] = "PBInt";
+    $this->values["3"] = "";
+    $this->fields["4"] = "PBInt";
+    $this->values["4"] = "";
+    $this->fields["5"] = "PBBool";
+    $this->values["5"] = "";
+    $this->values["5"] = new PBBool();
+    $this->values["5"]->value = false;
+    $this->fields["6"] = "PBString";
+    $this->values["6"] = "";
+  }
+  function smsTemplateId()
+  {
+    return $this->_get_value("1");
+  }
+  function set_smsTemplateId($value)
+  {
+    return $this->_set_value("1", $value);
+  }
+  function smsContent($offset)
+  {
+    return $this->_get_arr_value("2", $offset);
+  }
+  function add_smsContent()
+  {
+    return $this->_add_arr_value("2");
+  }
+  function set_smsContent($index, $value)
+  {
+    $this->_set_arr_value("2", $index, $value);
+  }
+  function remove_last_smsContent()
+  {
+    $this->_remove_last_arr_value("2");
+  }
+  function smsContent_size()
+  {
+    return $this->_get_arr_size("2");
+  }
+  function offlineSendtime()
+  {
+    return $this->_get_value("3");
+  }
+  function set_offlineSendtime($value)
+  {
+    return $this->_set_value("3", $value);
+  }
+  function smsSendDuration()
+  {
+    return $this->_get_value("4");
+  }
+  function set_smsSendDuration($value)
+  {
+    return $this->_set_value("4", $value);
+  }
+  function smsChecked()
+  {
+    return $this->_get_value("5");
+  }
+  function set_smsChecked($value)
+  {
+    return $this->_set_value("5", $value);
+  }
+  function smsCheckedErrorMsg()
+  {
+    return $this->_get_value("6");
+  }
+  function set_smsCheckedErrorMsg($value)
+  {
+    return $this->_set_value("6", $value);
+  }
+}
+class SMSStatus extends PBEnum
+{
+  const unread  = 0;
+  const read  = 1;
+}
 class InnerFiled_Type extends PBEnum
 {
   const str  = 0;
@@ -470,11 +888,6 @@ class InnerFiled extends PBMessage
   {
     return $this->_set_value("3", $value);
   }
-}
-class SMSStatus extends PBEnum
-{
-  const unread  = 0;
-  const read  = 1;
 }
 class ActionChain_Type extends PBEnum
 {
@@ -594,6 +1007,10 @@ class ActionChain extends PBMessage
     $this->values["380"] = "";
     $this->fields["381"] = "InnerFiled";
     $this->values["381"] = array();
+    $this->fields["382"] = "PBString";
+    $this->values["382"] = "";
+    $this->fields["383"] = "PBBool";
+    $this->values["383"] = "";
   }
   function actionId()
   {
@@ -955,211 +1372,21 @@ class ActionChain extends PBMessage
   {
     return $this->_get_arr_size("381");
   }
-}
-class NotifyInfo extends PBMessage
-{
-  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
-  public function __construct($reader=null)
+  function notifyid()
   {
-    parent::__construct($reader);
-    $this->fields["1"] = "PBString";
-    $this->values["1"] = "";
-    $this->fields["2"] = "PBString";
-    $this->values["2"] = "";
-    $this->fields["3"] = "PBString";
-    $this->values["3"] = "";
+    return $this->_get_value("382");
   }
-  function title()
+  function set_notifyid($value)
   {
-    return $this->_get_value("1");
+    return $this->_set_value("382", $value);
   }
-  function set_title($value)
+  function force()
   {
-    return $this->_set_value("1", $value);
+    return $this->_get_value("383");
   }
-  function content()
+  function set_force($value)
   {
-    return $this->_get_value("2");
-  }
-  function set_content($value)
-  {
-    return $this->_set_value("2", $value);
-  }
-  function payload()
-  {
-    return $this->_get_value("3");
-  }
-  function set_payload($value)
-  {
-    return $this->_set_value("3", $value);
-  }
-}
-class PushInfo extends PBMessage
-{
-  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
-  public function __construct($reader=null)
-  {
-    parent::__construct($reader);
-    $this->fields["1"] = "PBString";
-    $this->values["1"] = "";
-    $this->fields["2"] = "PBString";
-    $this->values["2"] = "";
-    $this->fields["3"] = "PBString";
-    $this->values["3"] = "";
-    $this->fields["4"] = "PBString";
-    $this->values["4"] = "";
-    $this->fields["5"] = "PBString";
-    $this->values["5"] = "";
-    $this->fields["6"] = "PBString";
-    $this->values["6"] = "";
-    $this->fields["7"] = "PBString";
-    $this->values["7"] = "";
-    $this->fields["8"] = "PBString";
-    $this->values["8"] = "";
-    $this->fields["9"] = "PBString";
-    $this->values["9"] = "";
-    $this->fields["10"] = "PBInt";
-    $this->values["10"] = "";
-    $this->fields["11"] = "PBBool";
-    $this->values["11"] = "";
-    $this->fields["12"] = "PBString";
-    $this->values["12"] = "";
-    $this->fields["13"] = "PBBool";
-    $this->values["13"] = "";
-    $this->fields["14"] = "PBString";
-    $this->values["14"] = "";
-    $this->fields["15"] = "PBBool";
-    $this->values["15"] = "";
-    $this->fields["16"] = "NotifyInfo";
-    $this->values["16"] = "";
-  }
-  function message()
-  {
-    return $this->_get_value("1");
-  }
-  function set_message($value)
-  {
-    return $this->_set_value("1", $value);
-  }
-  function actionKey()
-  {
-    return $this->_get_value("2");
-  }
-  function set_actionKey($value)
-  {
-    return $this->_set_value("2", $value);
-  }
-  function sound()
-  {
-    return $this->_get_value("3");
-  }
-  function set_sound($value)
-  {
-    return $this->_set_value("3", $value);
-  }
-  function badge()
-  {
-    return $this->_get_value("4");
-  }
-  function set_badge($value)
-  {
-    return $this->_set_value("4", $value);
-  }
-  function payload()
-  {
-    return $this->_get_value("5");
-  }
-  function set_payload($value)
-  {
-    return $this->_set_value("5", $value);
-  }
-  function locKey()
-  {
-    return $this->_get_value("6");
-  }
-  function set_locKey($value)
-  {
-    return $this->_set_value("6", $value);
-  }
-  function locArgs()
-  {
-    return $this->_get_value("7");
-  }
-  function set_locArgs($value)
-  {
-    return $this->_set_value("7", $value);
-  }
-  function actionLocKey()
-  {
-    return $this->_get_value("8");
-  }
-  function set_actionLocKey($value)
-  {
-    return $this->_set_value("8", $value);
-  }
-  function launchImage()
-  {
-    return $this->_get_value("9");
-  }
-  function set_launchImage($value)
-  {
-    return $this->_set_value("9", $value);
-  }
-  function contentAvailable()
-  {
-    return $this->_get_value("10");
-  }
-  function set_contentAvailable($value)
-  {
-    return $this->_set_value("10", $value);
-  }
-  function invalidAPN()
-  {
-    return $this->_get_value("11");
-  }
-  function set_invalidAPN($value)
-  {
-    return $this->_set_value("11", $value);
-  }
-  function apnJson()
-  {
-    return $this->_get_value("12");
-  }
-  function set_apnJson($value)
-  {
-    return $this->_set_value("12", $value);
-  }
-  function invalidMPN()
-  {
-    return $this->_get_value("13");
-  }
-  function set_invalidMPN($value)
-  {
-    return $this->_set_value("13", $value);
-  }
-  function mpnXml()
-  {
-    return $this->_get_value("14");
-  }
-  function set_mpnXml($value)
-  {
-    return $this->_set_value("14", $value);
-  }
-  function validNotify()
-  {
-    return $this->_get_value("15");
-  }
-  function set_validNotify($value)
-  {
-    return $this->_set_value("15", $value);
-  }
-  function notifyInfo()
-  {
-    return $this->_get_value("16");
-  }
-  function set_notifyInfo($value)
-  {
-    return $this->_set_value("16", $value);
+    return $this->_set_value("383", $value);
   }
 }
 class Transparent extends PBMessage
@@ -1190,6 +1417,8 @@ class Transparent extends PBMessage
     $this->values["10"] = "";
     $this->fields["11"] = "PBString";
     $this->values["11"] = "";
+    $this->fields["12"] = "SmsInfo";
+    $this->values["12"] = "";
   }
   function id()
   {
@@ -1307,6 +1536,14 @@ class Transparent extends PBMessage
   {
     return $this->_set_value("11", $value);
   }
+  function smsInfo()
+  {
+    return $this->_get_value("12");
+  }
+  function set_smsInfo($value)
+  {
+    return $this->_set_value("12", $value);
+  }
 }
 class OSMessage extends PBMessage
 {
@@ -1384,44 +1621,6 @@ class OSMessage extends PBMessage
   function set_priority($value)
   {
     return $this->_set_value("8", $value);
-  }
-}
-class Target extends PBMessage
-{
-  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
-  public function __construct($reader=null)
-  {
-    parent::__construct($reader);
-    $this->fields["1"] = "PBString";
-    $this->values["1"] = "";
-    $this->fields["2"] = "PBString";
-    $this->values["2"] = "";
-    $this->fields["3"] = "PBString";
-    $this->values["3"] = "";
-  }
-  function appId()
-  {
-    return $this->_get_value("1");
-  }
-  function set_appId($value)
-  {
-    return $this->_set_value("1", $value);
-  }
-  function clientId()
-  {
-    return $this->_get_value("2");
-  }
-  function set_clientId($value)
-  {
-    return $this->_set_value("2", $value);
-  }
-  function alias()
-  {
-    return $this->_get_value("3");
-  }
-  function set_alias($value)
-  {
-    return $this->_set_value("3", $value);
   }
 }
 class PushOSSingleMessage extends PBMessage
@@ -1610,6 +1809,58 @@ class PushMMPSingleMessage extends PBMessage
   function set_requestId($value)
   {
     return $this->_set_value("4", $value);
+  }
+}
+class PushMMPSingleBatchMessage extends PBMessage
+{
+  var $wired_type = PBMessage::WIRED_LENGTH_DELIMITED;
+  public function __construct($reader=null)
+  {
+    parent::__construct($reader);
+    $this->fields["1"] = "PBString";
+    $this->values["1"] = "";
+    $this->fields["2"] = "PushMMPSingleMessage";
+    $this->values["2"] = array();
+    $this->fields["3"] = "PBBool";
+    $this->values["3"] = "";
+    $this->values["3"] = new PBBool();
+    $this->values["3"]->value = true;
+  }
+  function batchId()
+  {
+    return $this->_get_value("1");
+  }
+  function set_batchId($value)
+  {
+    return $this->_set_value("1", $value);
+  }
+  function batchItem($offset)
+  {
+    return $this->_get_arr_value("2", $offset);
+  }
+  function add_batchItem()
+  {
+    return $this->_add_arr_value("2");
+  }
+  function set_batchItem($index, $value)
+  {
+    $this->_set_arr_value("2", $index, $value);
+  }
+  function remove_last_batchItem()
+  {
+    $this->_remove_last_arr_value("2");
+  }
+  function batchItem_size()
+  {
+    return $this->_get_arr_size("2");
+  }
+  function isSync()
+  {
+    return $this->_get_value("3");
+  }
+  function set_isSync($value)
+  {
+    return $this->_set_value("3", $value);
   }
 }
 class StartMMPBatchTask extends PBMessage

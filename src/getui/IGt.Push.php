@@ -20,32 +20,35 @@ require_once(dirname(__FILE__) . '/' . 'igetui/utils/GTConfig.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/HttpManager.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/ApiUrlRespectUtils.php');
 require_once(dirname(__FILE__) . '/' . 'igetui/utils/LangUtils.php');
-
-
+require_once dirname(__FILE__) . '/igetui/IGt.APNPayload.php';
+require_once dirname(__FILE__) . '/igetui/template/notify/IGt.Notify.php';
 
 Class IGeTui
 {
     var $appkey; //第三方 标识
     var $masterSecret; //第三方 密钥
     var $format = "json"; //默认为 json 格式
-    var $host = '';
+    var $host ="";
     var $needDetails = false;
     static $appkeyUrlList = array();
     var $domainUrlList =  array();
-	var $useSSL = NULL; //是否使用https连接 以该标志为准
+    var $useSSL = NULL; //是否使用https连接 以该标志为准
+    var $authToken;
 
     public function __construct($domainUrl, $appkey, $masterSecret, $ssl = NULL)
     {
         $this->appkey = $appkey;
         $this->masterSecret = $masterSecret;
-		
-		$domainUrl = trim($domainUrl);
-		if ($ssl == NULL && $domainUrl != NULL && strpos(strtolower($domainUrl), "https:") === 0)
-		{
-			$ssl = true;
-		}
-		$this->useSSL = ($ssl == NULL ? false : $ssl);
-		
+
+        $domainUrl = trim($domainUrl);
+        if ($ssl == NULL && $domainUrl != NULL && strpos(strtolower($domainUrl), "https:") === 0)
+        {
+            $ssl = true;
+        }
+
+        $this->useSSL = ($ssl == NULL ? false : $ssl);
+
+
         if ($domainUrl == NULL || strlen($domainUrl) == 0)
         {
             $this->domainUrlList =  GTConfig::getDefaultDomainUrl($this->useSSL);
@@ -56,7 +59,7 @@ Class IGeTui
         }
         $this->initOSDomain(null);
     }
-
+    
     private function initOSDomain($hosts)
     {
         if($hosts == null || count($hosts) == 0)
@@ -101,14 +104,17 @@ Class IGeTui
         }
         if($urlList == null || count($urlList) <= 0)
         {
-			$h = implode(',', $domainUrlList);
+            $h = implode(',', $domainUrlList);
             throw new Exception("Can not get hosts from ".$h."|error:".$ex);
         }
         return $urlList;
     }
-
     function httpPostJSON($url,$data,$gzip=false)
     {
+        $data['version'] = GTConfig::getSDKVersion();
+
+
+        $data['authToken'] = $this->authToken;
         if($url == null){
             $url = $this->host;
         }
@@ -120,7 +126,10 @@ Class IGeTui
                 {
                     if ($this->connect())
                     {
+
+                        $data['authToken'] = $this->authToken;
                         $rep = HttpManager::httpPostJson($url, $data, $gzip);
+
                     }
                 }
                 catch (Exception $e)
@@ -144,13 +153,16 @@ Class IGeTui
         $sign = md5($this->appkey . $timeStamp . $this->masterSecret);
         //
         $params = array();
-
         $params["action"] = "connect";
         $params["appkey"] = $this->appkey;
         $params["timeStamp"] = $timeStamp;
         $params["sign"] = $sign;
+        $params["version"] = GTConfig::getSDKVersion();
         $rep = HttpManager::httpPostJson($this->host,$params,false);
         if ('success' == $rep['result']) {
+            if($rep["authtoken"] != null){
+                $this->authToken = $rep["authtoken"];
+            }
             return true;
         }
         throw new Exception("appKey Or masterSecret is Auth Failed");
@@ -160,7 +172,9 @@ Class IGeTui
     {
         $params = array();
         $params["action"] = "close";
-        $params["appkey"] = $this->appKey;
+        $params["appkey"] = $this->appkey;
+        $params["version"] = GTConfig::getSDKVersion();
+        $params["authtoken"] = $this->authToken;
         HttpManager::httpPostJson($this->host,$params,false);
     }
 
@@ -174,7 +188,7 @@ Class IGeTui
     {
         if($requestId == null || trim($requestId) == "")
         {
-            $requestId = uniqid();
+            $requestId = LangUtils::randomUUID();
         }
         $params = $this->getSingleMessagePostData($message, $target, $requestId);
         return $this->httpPostJSON($this->host,$params);
@@ -207,6 +221,7 @@ Class IGeTui
         return $params;
     }
 
+
     public function getContentId($message,$taskGroupName = null)
     {
         return $this->getListAppContentId($message,$taskGroupName);
@@ -221,12 +236,44 @@ Class IGeTui
     {
         $params = array();
         $params["action"] = "cancleContentIdAction";
-        $params["appkey"] = $this->appKey;
+        $params["appkey"] = $this->appkey;
         $params["contentId"] = $contentId;
         $rep = $this->httpPostJSON($this->host,$params);
         return $rep['result'] == 'ok' ? true : false;
     }
 
+    /**
+     * 用户黑名单接口
+     * @param appId
+     * @param cidList
+     * @param optType 1: 增加黑名单，2：恢复加入黑名单中的cid列表
+     * @return
+     */
+    private function blackCidList($appId,$cidList,$optType){
+        $params = array();
+        $limit = GTConfig::getMaxLenOfBlackCidList();
+        if($limit < count($cidList)){
+            throw new Exception("cid size:".count($cidList)." beyond the limit:".$limit);
+        }
+        $params["action"] = "blackCidAction";
+        $params["appkey"] = $this->appkey;
+        $params["appId"] = $appId;
+        $params["cidList"] = $cidList;
+        $params["optType"] = $optType;
+        return $this->httpPostJSON($this->host,$params);
+    }
+
+    public function  addCidListToBlk($appId,$cidList){
+
+        return $this->blackCidList($appId,$cidList,1);
+
+    }
+
+    public function  restoreCidListFromBlk($appId,$cidList){
+
+        return $this->blackCidList($appId,$cidList,2);
+
+    }
     /**
      *  批量推送信息
      * @param  String contentId
@@ -237,7 +284,7 @@ Class IGeTui
     {
         $params = array();
         $params["action"] = "pushMessageToListAction";
-        $params["appkey"] = $this-> appkey;
+        $params["appkey"] = $this->appkey;//?
         $params["contentId"] = $contentId;
         $needDetails = GTConfig::isPushListNeedDetails();
         $params["needDetails"] = $needDetails;
@@ -316,6 +363,38 @@ Class IGeTui
         return $this->httpPostJSON($this->host, $params);
     }
 
+    /**
+     * 设置 iphone Badge
+     * @param badge
+     * @param appid
+     * @param deviceTokenList
+     * @param cidList
+     * @return
+     */
+
+    private function setBadge($badge,$appid,$deviceTokenList,$cidList){
+        $params = array();
+        $params["action"] = "setBadgeAction";
+        $params["appkey"] = $this->appkey;
+        $params["badge"] = $badge;
+        $params["appid"] = $appid;
+        $params["deviceToken"] = $deviceTokenList;
+        $params["cid"] = $cidList;
+        return $this->httpPostJSON($this->host, $params);
+
+    }
+
+    public function setBadgeForCID($badge,$appid,$cidList){
+
+        return $this->setBadge($badge,$appid,array(), $cidList);
+
+    }
+    public function setBadgeForDeviceToken($badge,$appid,$deviceTokenList){
+
+        return $this->setBadge($badge,$appid,$deviceTokenList, array());
+
+    }
+
     public function pushMessageToApp($message, $taskGroupName = null)
     {
         $contentId = $this->getListAppContentId($message, $taskGroupName);
@@ -353,6 +432,10 @@ Class IGeTui
             $params["contentType"] = 2;
             $params["appIdList"] = $message->get_appIdList();
             $params["speed"] = $message->get_speed();
+            //定时时间
+            if($message->getPushTime() != null && !empty($message->getPushTime())){
+                $params["pushTime"] = $message->getPushTime();
+            }
             //$params["personaTags"]
             $personaTags = array();
             if($message->get_conditions() == null) {
@@ -369,7 +452,7 @@ Class IGeTui
         {
             return $rep['contentId'];
         }else{
-            throw new Exception("host:[".$this->host."]" + "获取contentId失败:".$rep);
+            throw new Exception("host:[".$this->host."]" + "获取contentId失败:" . $rep);
         }
     }
 
@@ -503,17 +586,36 @@ Class IGeTui
         $params["taskId"] = $taskId;
         return $this->httpPostJson($this->host, $params);
     }
-	
-	public function getPushResultByTaskidList( $taskIdList) {
-		return $this->getPushActionResultByTaskids($taskIdList, null);
-	}
-	
-	public function getPushActionResultByTaskids( $taskIdList, $actionIdList) {
+
+    public function getPushResultByGroupName($appId,$groupName){
+        $params = array();
+        $params["action"] = "getPushResultByGroupName";
+        $params["appkey"] = $this->appkey;
+        $params["appId"] = $appId;
+        $params["groupName"] = $groupName;
+        return $this->httpPostJSON($this->host, $params);
+    }
+
+    public function getLast24HoursOnlineUserStatistics($appId){
+        $params = array();
+        $params["action"] = "getLast24HoursOnlineUser";
+        $params["appkey"] = $this->appkey;
+        $params["appId"] = $appId;
+
+
+        return $this->httpPostJSON($this->host, $params);
+
+    }
+    public function getPushResultByTaskidList( $taskIdList) {
+        return $this->getPushActionResultByTaskids($taskIdList, null);
+    }
+
+    public function getPushActionResultByTaskids( $taskIdList, $actionIdList) {
         $params = array();
         $params["action"] = "getPushMsgResultByTaskidList";
         $params["appkey"] = $this->appkey;
         $params["taskIdList"] = $taskIdList;
-		$params["actionIdList"] = $actionIdList;
+        $params["actionIdList"] = $actionIdList;
         return $this->httpPostJson($this->host, $params);
     }
 
@@ -587,9 +689,8 @@ Class IGeTui
         if(!$message instanceof IGtTagMessage) {
             return $this->get_result("MsgTypeError");
         }
-
         if($requestId == null  || trim($requestId) == "") {
-            $requestId = uniqid();
+            $requestId = LangUtils::randomUUID();
         }
 
         $params = array();
@@ -603,9 +704,74 @@ Class IGeTui
         $params["appIdList"] = $message->get_appIdList();
         $params["speed"] = $message->get_speed();
         $params["requestId"] = $requestId;
-
         $params["tag"] = $message->get_tag();
         return $this->httpPostJSON($this->host, $params);
+    }
+
+    public function pushTagMessageRetry($message) {
+        return $this->pushTagMessage($message,null);
+    }
+    public function getScheduleTask($taskId,$appId){
+        $params = array();
+        $params["action"] = "getScheduleTaskAction";
+        $params["appId"] = $appId;
+        $params["appkey"] = $this->appkey;
+        $params["taskId"] = $taskId;
+        var_dump($this->host);
+
+        return $this->httpPostJSON($this->host, $params);
+
+    }
+
+    public function delScheduleTask($taskId,$appId){
+        $params = array();
+        $params["action"] = "delScheduleTaskAction";
+        $params["appId"] = $appId;
+        $params["appkey"] = $this->appkey;
+        $params["taskId"] = $taskId;
+
+        return $this->httpPostJSON($this->host, $params);
+
+    }
+
+    public function bindCidPn($appId,$cidAndPn){
+        $params = array();
+        $params["action"] = "bind_cid_pn";
+        $params["appId"] = $appId;
+        $params["appkey"] = $this->appkey;
+        $params["cidpnlist"] = $cidAndPn;
+
+        return $this->httpPostJSON($this->host,$params);
+    }
+
+    public function unbindCidPn($appId,$cid){
+        $params = array();
+        $params["action"] = "unbind_cid_pn";
+        $params["appId"] = $appId;
+        $params["appkey"] = $this->appkey;
+        $params["cids"] = $cid;
+
+        return $this->httpPostJSON($this->host,$params);
+    }
+
+    public function queryCidPn($appId,$cid){
+        $params = array();
+        $params["action"] = "query_cid_pn";
+        $params["appId"] = $appId;
+        $params["appkey"] = $this->appkey;
+        $params["cids"] = $cid;
+
+        return  $this->httpPostJSON($this->host,$params);
+    }
+
+    public function stopSendSms($appId,$taskId){
+        $params = array();
+        $params["action"] = "stop_sms";
+        $params["appId"] = $appId;
+        $params["appkey"] = $this->appkey;
+        $params["taskId"] = $taskId;
+        return  $this->httpPostJSON($this->host,$params);
+
     }
 
     private function get_result($info) {
@@ -613,7 +779,7 @@ Class IGeTui
         $ret["result"] = $info;
         return $ret;
     }
-    
+
     private function micro_time()
     {
         list($usec, $sec) = explode(" ", microtime());
